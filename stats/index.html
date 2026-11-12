@@ -37,7 +37,7 @@ var NS='cachet-7d8ffd1a6f', PAGES=11;
 var KEYS=['v_new','v_ret','visit','creator','src_direct','src_search','src_social','src_referral','src_inv','b_start','b_seal','b_seal_ref','b_seal_exp','b_seal_org','b_seal_paid','gen_0','gen_1','gen_2','gen_3','gen_4','gen_5','inv_open','inv_reach','inv_unseal','forge','loop_click','rsvp_yes','rsvp_maybe','rsvp_no','share_copy','share_wa','share_qr','share_guest','pay_open','pay_click','lic_ok','demo_open'];
 var V={}, failed=0;
 function $(i){return document.getElementById(i)}
-function get(k,retry){return fetch('https://abacus.jasoncameron.dev/get/'+NS+'/'+k).then(function(r){ if(r.status===404){V[k]=0;return} if(r.status===429&&!retry){return new Promise(function(ok){setTimeout(ok,3500)}).then(function(){return get(k,true)})} if(!r.ok) throw 0; return r.json().then(function(j){V[k]=+j.value||0})}).catch(function(){failed++;V[k]=null})}
+function get(k,retry){return fetch('https://abacus.jasoncameron.dev/get/'+NS+'/'+k).then(function(r){ if(r.status===404){V[k]=0;return} if(r.status===429&&(retry||0)<3){return new Promise(function(ok){setTimeout(ok,4000)}).then(function(){return get(k,(retry||0)+1)})} if(!r.ok) throw 0; return r.json().then(function(j){V[k]=+j.value||0})}).catch(function(){failed++;V[k]=null})}
 function n(k){return V[k]||0}
 function fmt(x,d){return isFinite(x)?x.toLocaleString('fr-FR',{maximumFractionDigits:d==null?2:d}):'—'}
 function pct(a,b){return b? fmt(100*a/b,1)+' %':'—'}
@@ -62,8 +62,8 @@ function render(){
 }
 $('rev').value=localStorage.getItem('cachet_rev')||0; $('spend').value=localStorage.getItem('cachet_spend')||0;
 ['rev','spend'].forEach(function(i){$(i).addEventListener('input',function(){localStorage.setItem('cachet_'+i,$(i).value);render()})});
-var i=0; (function batch(){ var part=KEYS.slice(i,i+6); i+=6; if(!part.length){ $('state').textContent=failed===KEYS.length?'Compteurs injoignables pour le moment. Réessayez dans une minute.':failed?('Lecture partielle : '+failed+' compteurs injoignables.'):('Compteurs lus le '+new Date().toLocaleString('fr-FR')+'. Données réelles, aucune valeur simulée.'); render(); return }
-  Promise.all(part.map(function(k){return get(k)})).then(function(){render(); setTimeout(batch,2300)}) })();
+var i=0; (function batch(){ var part=KEYS.slice(i,i+4); i+=4; if(!part.length){ $('state').textContent=failed===KEYS.length?'Compteurs injoignables pour le moment. Réessayez dans une minute.':failed?('Lecture partielle : '+failed+' compteurs injoignables.'):('Compteurs lus le '+new Date().toLocaleString('fr-FR')+'. Données réelles, aucune valeur simulée.'); render(); return }
+  Promise.all(part.map(function(k){return get(k)})).then(function(){render(); setTimeout(batch,2600)}) })();
 })();
 </script>
 </body></html>
