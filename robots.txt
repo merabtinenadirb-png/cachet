@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /stats/
+Sitemap: https://merabtinenadirb-png.github.io/cachet/sitemap.xml
