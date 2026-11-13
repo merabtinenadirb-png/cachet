@@ -120,6 +120,8 @@ function clean(o) {
   };
 }
 function compact(inv) { const out = {}; for (const k in inv) { const v = inv[k]; if (v === '' || v === 0 || (Array.isArray(v) && !v.length)) continue; out[k] = v; } out.v = 1; return out; }
+/* 00213… → 213… ; 2130555… → 213555… (le 0 local n'existe pas à l'international) */
+function normPhone(v) { let d = String(v || '').replace(/\D/g, ''); if (d.startsWith('00')) d = d.slice(2); return d.replace(/^(213|212|216|33|32|41|44|49|39|34)0/, '$1'); }
 const hostsOf = (inv, l) => (inv.b ? inv.a + ' ' + t('and', l || inv.l) + ' ' + inv.b : inv.a);
 const newId = () => { const A = 'abcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const r = crypto.getRandomValues(new Uint8Array(6)); for (const b of r) s += A[b % A.length]; return s; };
 function parseDate(d) { const m = /^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d))?$/.exec(d || ''); if (!m) return null; return { date: new Date(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0), timed: !!m[4] }; }
@@ -447,7 +449,7 @@ function initHome() {
   function read() {
     state.o = el('o').value; state.a = el('a').value; state.b = el('b').value; state.h = el('h').value;
     state.d = el('date').value ? el('date').value + (el('time').value ? 'T' + el('time').value : '') : '';
-    state.pl = el('pl').value; state.ad = el('ad').value; state.m = el('m').value; state.dc = el('dc').value; state.w = el('w').value.replace(/\D/g, ''); state.l = el('l').value;
+    state.pl = el('pl').value; state.ad = el('ad').value; state.m = el('m').value; state.dc = el('dc').value; state.w = normPhone(el('w').value); state.l = el('l').value;
     el('h').placeholder = t('h_' + state.o, state.l);
   }
   let pvTimer, pvCard, started = false;
@@ -472,7 +474,7 @@ function initHome() {
     read(); const errs = [];
     if (!state.a.trim()) errs.push(['a', t('err_a')]);
     if (!state.d) errs.push(['date', t('err_date')]);
-    if (state.w && state.w.length < 9) errs.push(['w', t('err_wa')]);
+    if (state.w && (state.w.length < 10 || state.w[0] === '0')) errs.push(['w', t('err_wa')]);
     $$('.err', form).forEach((x) => x.remove()); $$('[aria-invalid]', form).forEach((x) => x.removeAttribute('aria-invalid'));
     errs.forEach(([n, msg]) => { const f = el(n); f.setAttribute('aria-invalid', 'true'); f.closest('.fld').append(h('p', { class: 'err', role: 'alert', text: msg })); });
     if (errs.length) el(errs[0][0]).focus();
